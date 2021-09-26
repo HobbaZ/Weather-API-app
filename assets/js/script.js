@@ -62,7 +62,7 @@ function getApi(city) {
 
         var requestURL = 'https://api.openweathermap.org/data/2.5/onecall?lat='+latitude+'&lon='+longitude+'&exclude=hourly,minutely&units=metric&appid=' + apiKey;
         //works!
-        
+
     fetch(requestURL)
       .then(function (response) {
           if(response.ok) { // if response found
@@ -81,10 +81,12 @@ function getApi(city) {
   }
 }
 
+//_________________CURRENT WEATHER___________________________
+
   function displayWeatherData(data) { //current weather data
 
     var date = document.createElement("h2");
-    date.textContent = moment().format("do MMMM,YYYY");
+    date.textContent = moment().format("Do MMM, YYYY");
 
     var sectionTitle = document.createElement('h3');
     sectionTitle.textContent = "Current";
@@ -94,11 +96,19 @@ function getApi(city) {
     displayWeatherEl.appendChild(sectionTitle);
 
     //get weather icon
-    //var weatherIcon = weatherInfo[1].icon;
-    //var image = document.createElement('img');
-    //image.src = "https://openweathermap.org/img/wn/"+weatherIcon+"@2x.png;";
+    var imageContainer = document.createElement('div');
+    var image = document.createElement('img');
+    var weatherIcon = data.current.weather[0].icon;
+    image.src = "https://openweathermap.org/img/wn/"+ weatherIcon +"@2x.png";
+    imageContainer.appendChild(image);
+    displayWeatherEl.appendChild(imageContainer);
+
+    //convert unix time
+    var unixDate = data.current.dt;
+    var forecastDate = moment(unixDate*1000).format("Do MMM YYYY");
 
     var weatherInfoArray = [
+    forecastDate,
     "Weather: " + data.current.weather[0].description,
     "Temperature: " + data.current.temp.toFixed(1) +"℃",
     "Humidity: " + data.current.humidity + "%",
@@ -112,16 +122,17 @@ function getApi(city) {
       }
 
     
-    //forcast weather data
+    //____________________5 DAY FORECAST_______________________
+
     var sectionTitle = document.createElement('h1');
     sectionTitle.textContent = "5 Day Forcast";
     displayWeatherEl.appendChild(sectionTitle);
 
     var days = 4 //number of days to forcast (max 7);
 
-    for (let index = 0; index < days; index++) { // 0 is tomorrow
+    for (let index = 1; index < days; index++) { // 1 is tomorrow, 0 is today
         //create card for each day
-        var card = document.createElement("card");
+        var card = document.createElement("div");
         var day = document.createElement("h2");
 
         //use moment.js to get correct next 5 days?
@@ -130,11 +141,23 @@ function getApi(city) {
         } else {
             day.textContent = "Day " + index;
         }
-
         displayWeatherEl.appendChild(day);
+
+        //convert unix time
+        var unixDate = data.daily[index].dt;
+        var forecastDate = moment(unixDate*1000).format("Do MMM YYYY");
+
+        //get weather icon
+        var imageContainer = document.createElement('div');
+        var image = document.createElement('img');
+        var weatherIcon = data.daily[index].weather[0].icon;
+        image.src = "https://openweathermap.org/img/wn/"+ weatherIcon +"@2x.png";
+        imageContainer.appendChild(image);
+        displayWeatherEl.appendChild(imageContainer);
 
         //add content
         var info = [
+            forecastDate,
             "Weather: " + data.daily[index].weather[0].description,
             "Max Temperature: " + data.daily[index].temp.max.toFixed(1)+"℃",
             "Min Temperature: " + data.daily[index].temp.min.toFixed(1)+"℃", 
