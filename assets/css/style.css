@@ -1,4 +1,64 @@
-jumbotron {
+body {
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+#search-form, #history {
+    background-color: white;
+    color:black
+}
+
+.cardStyle {
+    justify-content: space-around;
+    margin-bottom: 15px;
+}
+
+.sunriseTheme {
+    --primaryColor :rgb(165, 68, 3);
+    --textColor : darkslategray;
+}
+
+.midTheme {
+    --primaryColor :rgb(0, 110, 255);
+    --textColor: white;
+}
+
+.middayTheme {
+   --primaryColor: rgb(0, 44, 138);
+   --textColor: white;
+}
+
+.nightTheme {
+    --primaryColor: rgb(3, 4, 34);
+    --textColor: white;
+ }
+
+.jumbotron {
     text-align: center;
+    background-color: var(--primaryColor);
+    color: var(--textColor);
+}
+
+h1, h2 {
+    text-align: center;
+}
+
+.container {
+    display: flex;
+    justify-content: space-around;
+    width:100%;
+}
+
+.cardStyle, .mainCardStyle {
+    border-radius: 10px;
+    text-align: center;
+    width:100%;
+    padding-bottom: 2%;
+    background-color: var(--primaryColor);
+    color: var(--textColor);
+}
+
+button:hover, .btn:hover {
+    background-color: var(--primaryColor);
+    color: var(--textColor);
 }
 
