@@ -12,7 +12,6 @@ var cityInput = document.querySelector("#cityInput");
 
 //;ocal storage
 var searches = [];
-var storedSearches = localStorage.getItem("searchHistory");
 
 var apiKey = "892a001eaf149bea14813996e20dbc89";
 
@@ -21,58 +20,21 @@ function getCityName(event) { //search city after button click
     var city = cityInput.value.trim();
 
     if (city) { //call first api and send to local storage
-        displayWeatherEl.textContent = "";
         getApi(city);
         storeCity(city);
-        var cityName = document.createElement("h1");
-        cityName.textContent = city.toUpperCase();
+
+        displayWeatherEl.textContent = "";
         clearHistoryButton.style.display = "block";
 
-        displayWeatherEl.appendChild(cityName);
     } else {
-        alert("Please enter a city");
+        return "Please enter a city";
     }
-}
-
-function storeCity(city) {
-    searches.push(city);
-    console.log(searches);
-    history.innerHTML = "";
-    localStorage.setItem("searchHistory", JSON.stringify(searches));
-    displayHistory();
-}
-
-//needs to be fixed clear list
-/*function clearHistory(event) {
-    event.preventDefault();
-    localStorage.clear();
-    searches.length = 0;
-    displayHistory();
-}*/
-
-function displayHistory() {
-    var history = document.querySelector('#history');
-    history.innerHTML = "<h1>History</h1><hr><p>Previous searches appear here</p>";
-
-    var searchHistory = JSON.parse(storedSearches);
-    
-    for (let i = 0; i < searchHistory.length; i++) {
-        var search = document.createElement('button'); //create button of search value
-        search.classList.add("w-100");
-        search.textContent = searchHistory[i];
-        history.appendChild(search);
-        
-        //execute getCityName function when search history button pressed
-        search.addEventListener("click", function() {
-            console.log("You are trying to load " + search.value);
-            //getApi(search.value);
-        });
-}
 }
 
 //fetch api
 function getApi(city) {
     var requestURL = 'https://api.openweathermap.org/data/2.5/weather?q=' + city + '&units=metric&appid=' + apiKey;
+    displayWeatherEl.innerHTML="";
 
     fetch(requestURL)
     .then(function (response) {
@@ -88,14 +50,14 @@ function getApi(city) {
         console.log(data);
         var latitude = data.coord.lat;
         var longitude = data.coord.lon;
-        getCityData(latitude, longitude);
+        var selectedCity = city
+        getCityData(latitude, longitude, selectedCity);
     });
 
     //call second api function and insert lat and long from first api
-    function getCityData(latitude, longitude) {
-
+    function getCityData(latitude, longitude, selectedCity) {
+        //displayWeatherEl.innerHTML="";
         var requestURL = 'https://api.openweathermap.org/data/2.5/onecall?lat='+latitude+'&lon='+longitude+'&exclude=hourly,minutely&units=metric&appid=' + apiKey;
-        //works!
 
     fetch(requestURL)
       .then(function (response) {
@@ -109,18 +71,22 @@ function getApi(city) {
 
       .then(function (data) {
           console.log(data);
-          displayWeatherData(data);
+          displayWeatherData(data, selectedCity);
       });
   }
 }
 
 //_________________CURRENT WEATHER___________________________
 
-  function displayWeatherData(data) { //current weather data
-
+  function displayWeatherData(data, selectedCity) { //current weather data
+    
+    var cityName = document.createElement("h1");
+    cityName.textContent = selectedCity.toUpperCase();
+    
     var currentCard = document.createElement("div");
         currentCard.classList.add("mainCardStyle");
         currentCard.classList.add("px-5");
+        currentCard.appendChild(cityName);
 
 
     var date = document.createElement("h2");
@@ -164,18 +130,17 @@ function getApi(city) {
         rating.textContent = "UV: " + data.current.uvi.toFixed(1) + " Moderate";
         rating.style.backgroundColor = "green";
         
-    } else if (data.current.uvi < 3 && data.current.uvi > 0) {
-        rating.textContent = "UV: " + data.current.uvi.toFixed(1) + " Low";
+    } else {
+        rating.innerHTML = "UV: " + data.current.uvi.toFixed(1) + " Low";
         rating.style.backgroundColor = "rgb(120, 179, 2)";
     }
-
-    console.log(rating);
 
     var weatherInfoArray = [
     "Weather: " + data.current.weather[0].description,
     "Temperature: " + data.current.temp.toFixed(1) +"℃",
     "Humidity: " + data.current.humidity + "%",
     "Wind Speed: " + data.current.wind_speed.toFixed(1) + "Km/h",
+
     ];
 
     for (let index = 0; index < weatherInfoArray.length; index++) {
@@ -267,26 +232,62 @@ function getApi(city) {
     }
   }
 
+  function storeCity(city) {
+    searches.push(city);
+    console.log(searches);
+    history.innerHTML = "";
+    localStorage.setItem("searchHistory", JSON.stringify(searches));
+    displayHistory();
+}
+
+//needs to be fixed clear list
+/*function clearHistory(event) {
+    event.preventDefault();
+    localStorage.clear();
+    searches.length = 0;
+    displayHistory();
+}*/
+
+function displayHistory() {
+    var storedSearches = localStorage.getItem("searchHistory");
+    var history = document.querySelector('#history');
+    history.innerHTML = "<h1>History</h1><hr><p>Previous searches appear here</p>";
+
+    var searchHistory = JSON.parse(storedSearches);
+    
+    for (let i = 0; i < searchHistory.length; i++) {
+        var search = document.createElement('button'); //create button of search value
+        search.classList.add("w-100");
+        search.textContent = searchHistory[i];
+        history.appendChild(search);
+        
+        //execute getCityName function when search history button pressed
+        search.addEventListener("click", function(event) {
+            console.log("You are trying to load " + searchHistory[i]);
+            getApi(searchHistory[i]);
+        });
+}
+}
+
   //change colour for time of day (e.g sunrise/sunset orange, midday blue, night dark grey);
-function backgroundChange() {
+  function backgroundChange() {
 
     var currentHour = moment().format("HH");
-    //var body = document.querySelector(".jumbotron");
-    var body = document.body;
+    var body = document.querySelector(".jumbotron");
     
     if ((currentHour >=5 && currentHour < 7) || (currentHour >=17 && currentHour < 18)) {
         body.classList.add("sunriseTheme");
+
+    } else if (currentHour >=12 && currentHour < 13) {
+        body.classList.add("middayTheme");
     
     } else if ((currentHour >=7 && currentHour < 12) || (currentHour >=13 && currentHour < 18)) {
         body.classList.add("midTheme");
     
-    } else if (currentHour >=12 && currentHour < 13) {
-        body.classList.add("middayTheme");
-    
     } else if (currentHour >=18 && currentHour < 5) {
         body.classList.add("nightTheme");
     } 
-    }
+}
 
   checkWeatherButton.addEventListener("click", getCityName);
   clearHistoryButton.addEventListener("click", clearHistory);
