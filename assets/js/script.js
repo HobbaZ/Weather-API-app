@@ -10,6 +10,10 @@ clearHistoryButton.style.display = "none"; // hide clear button on page load
 var displayWeatherEl = document.querySelector("#displayWeather");
 var cityInput = document.querySelector("#cityInput");
 
+//;ocal storage
+var searches = [];
+var storedSearches = localStorage.getItem("searchHistory");
+
 var apiKey = "892a001eaf149bea14813996e20dbc89";
 
 function getCityName(event) { //search city after button click
@@ -19,7 +23,7 @@ function getCityName(event) { //search city after button click
     if (city) { //call first api and send to local storage
         displayWeatherEl.textContent = "";
         getApi(city);
-        storeCity();
+        storeCity(city);
         var cityName = document.createElement("h1");
         cityName.textContent = city.toUpperCase();
         clearHistoryButton.style.display = "block";
@@ -30,34 +34,39 @@ function getCityName(event) { //search city after button click
     }
 }
 
-function storeCity() {
-    cityToStore = cityInput.value;
-    var searches = [];
-    searches.push(cityToStore)
+function storeCity(city) {
+    searches.push(city);
     console.log(searches);
-    history.innerHTML = "<h1>History</h1><br><p>Previous searches appear here</p>";
+    history.innerHTML = "";
     localStorage.setItem("searchHistory", JSON.stringify(searches));
-    displayHistory(searches);
+    displayHistory();
 }
 
-function clearHistory(event) {
+//needs to be fixed clear list
+/*function clearHistory(event) {
     event.preventDefault();
+    localStorage.clear();
     searches.length = 0;
-    displayHistory(searches);
-}
+    displayHistory();
+}*/
 
-function displayHistory(searches) {
+function displayHistory() {
     var history = document.querySelector('#history');
-    history.innerHTML = "<h1>History</h1><br><p>Previous searches appear here</p>";
-    //var hist = localStorage.getItem("searchHistory");
-    for (let i = 0; i < searches.length; i++) {
-        var search = document.createElement('button');
+    history.innerHTML = "<h1>History</h1><hr><p>Previous searches appear here</p>";
+
+    var searchHistory = JSON.parse(storedSearches);
+    
+    for (let i = 0; i < searchHistory.length; i++) {
+        var search = document.createElement('button'); //create button of search value
         search.classList.add("w-100");
-        search.textContent = searches[i];
+        search.textContent = searchHistory[i];
         history.appendChild(search);
+        
+        //execute getCityName function when search history button pressed
         search.addEventListener("click", function() {
-            getCityData(search.value);
-        })
+            console.log("You are trying to load " + search.value);
+            //getApi(search.value);
+        });
 }
 }
 
@@ -71,7 +80,7 @@ function getApi(city) {
       console.log(response.status);
       return response.json();
         } else {
-            alert('Error: ' + response.status)
+            alert('Error: ' + response.status);
         }
     })
 
@@ -94,7 +103,7 @@ function getApi(city) {
         console.log(response.status);
         return response.json();
           } else {
-              alert('Error: ' + response.status)
+              alert('Error: ' + response.status);
           }
       })
 
@@ -138,13 +147,13 @@ function getApi(city) {
 
     var rating = document.createElement('p');
 
-    //UV index ratings
+    //UV index ratings disappeared for some reason
     if (data.current.uvi >= 11) {
-        rating.innerHTML = "UV: " + data.current.uvi.toFixed(1) + " Extreme";
+        rating.textContent = "UV: " + data.current.uvi.toFixed(1) + " Extreme";
         rating.style.backgroundColor = "red";
 
     } else if (data.current.uvi < 11 && data.current.uvi >= 8) {
-        rating.innerHTML = "UV: " + data.current.uvi.toFixed(1) + " Very High";
+        rating.textContent = "UV: " + data.current.uvi.toFixed(1) + " Very High";
         rating.style.backgroundColor = "orangered";
 
     } else if (data.current.uvi < 8 && data.current.uvi >= 6) {
@@ -156,9 +165,11 @@ function getApi(city) {
         rating.style.backgroundColor = "green";
         
     } else if (data.current.uvi < 3 && data.current.uvi > 0) {
-        rating.innerHTML = "UV: " + data.current.uvi.toFixed(1) + " Low";
-        rating.style.backgroundColor = "lightgreen";
+        rating.textContent = "UV: " + data.current.uvi.toFixed(1) + " Low";
+        rating.style.backgroundColor = "rgb(120, 179, 2)";
     }
+
+    console.log(rating);
 
     var weatherInfoArray = [
     "Weather: " + data.current.weather[0].description,
@@ -181,18 +192,18 @@ function getApi(city) {
     var forecastContainer = document.createElement('div');
     forecastContainer.classList.add("row");
 
-    var sectionTitle = document.createElement('h1');
+    var sectionTitle = document.createElement('h2');
     sectionTitle.textContent = "5 Day Forcast";
     displayWeatherEl.appendChild(sectionTitle);
 
-    var days = 6 //number of days to forcast (max 8);
+    var days = 6; //number of days to forcast (max 8);
 
     for (let index = 1; index < days; index++) { // 1 is tomorrow, 0 is today
         //create card for each day
         var card = document.createElement("div");
         card.classList.add("cardStyle");
         card.classList.add("col-lg");
-        card.classList.add("col-sm-12")
+        card.classList.add("col-sm-12");
         card.classList.add("mx-1");
 
         //convert unix time
@@ -200,7 +211,7 @@ function getApi(city) {
         var forecastDate = moment(unixDate*1000).format("Do MMM YYYY");
 
         //creat date holder and append forecast date to it
-        var day = document.createElement("h2");
+        var day = document.createElement("h3");
         day.textContent = forecastDate;
         card.appendChild(day);
 
@@ -233,7 +244,7 @@ function getApi(city) {
             
         } else if (data.daily[index].uvi < 3 && data.daily[index].uvi > 0) {
             rating.textContent = "UV: " + data.daily[index].uvi.toFixed(1) + " Low";
-            rating.style.backgroundColor = "lightgreen";
+            rating.style.backgroundColor = "rgb(120, 179, 2)";
         }
 
         //add content
@@ -252,7 +263,7 @@ function getApi(city) {
             card.appendChild(rating);
         }
             forecastContainer.appendChild(card);
-            displayWeatherEl.appendChild(forecastContainer)
+            displayWeatherEl.appendChild(forecastContainer);
     }
   }
 
