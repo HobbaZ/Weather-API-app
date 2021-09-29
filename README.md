@@ -8,7 +8,7 @@ Type in the name of the city you want to visit, it will then be saved and appear
 HTML, Bootstrap, css, js, Moment.JS, OpenWeather API 
 
 ### Screenshot
-![Weather app screenshot1](./assets/images/startScreen.png)
+![Weather app screenshot1](./assets/images/startScreen.PNG)
 
 ![Weather app screenshot2](./assets/images/screencapture-weather-API-website.png)
 
