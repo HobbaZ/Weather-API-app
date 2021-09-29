@@ -15,6 +15,8 @@ var searches = [];
 
 var apiKey = "892a001eaf149bea14813996e20dbc89";
 
+//___________SEARCH CITY NAME__________________
+
 function getCityName(event) { //search city after button click
     event.preventDefault();
     var city = cityInput.value.trim();
@@ -27,9 +29,12 @@ function getCityName(event) { //search city after button click
         clearHistoryButton.style.display = "block";
 
     } else {
-        return "Please enter a city";
+        alert("Please enter a city name");
+        return;
     }
 }
+
+//___________________GET FIRST API___________________________
 
 //fetch api
 function getApi(city) {
@@ -42,7 +47,8 @@ function getApi(city) {
       console.log(response.status);
       return response.json();
         } else {
-            alert('Error: ' + response.status);
+            alert('Error: ' + response.status + ", check the city spelling");
+            return;
         }
     })
 
@@ -53,6 +59,8 @@ function getApi(city) {
         var selectedCity = city
         getCityData(latitude, longitude, selectedCity);
     });
+
+    //_______________GET SECOND API________________________
 
     //call second api function and insert lat and long from first api
     function getCityData(latitude, longitude, selectedCity) {
@@ -66,6 +74,7 @@ function getApi(city) {
         return response.json();
           } else {
               alert('Error: ' + response.status);
+              return;
           }
       })
 
@@ -240,53 +249,91 @@ function getApi(city) {
     displayHistory();
 }
 
+//_______________CLEAR HISTORY____________________________
+
 //needs to be fixed clear list
-/*function clearHistory(event) {
+function clearHistory(event) {
     event.preventDefault();
     localStorage.clear();
     searches.length = 0;
     displayHistory();
-}*/
+}
+
+//_______________DISPLAY HISTORY FUNCTION______________________
 
 function displayHistory() {
     var storedSearches = localStorage.getItem("searchHistory");
+
     var history = document.querySelector('#history');
-    history.innerHTML = "<h1>History</h1><hr><p>Previous searches appear here</p>";
+    history.classList.add("pb-4");
+    history.innerHTML = "<h1>History</h1><p>Previous searches appear here</p>";
+    clearHistoryButton.style.display = "block";
 
     var searchHistory = JSON.parse(storedSearches);
-    
+
+    if (searchHistory !=null && searchHistory.length > 0) {
     for (let i = 0; i < searchHistory.length; i++) {
-        var search = document.createElement('button'); //create button of search value
+        var search = document.createElement("button"); //create button of search value
         search.classList.add("w-100");
-        search.textContent = searchHistory[i];
+        search.classList.add("btn-block");
+        search.classList.add("btn-outline-primary");
+        search.textContent = searchHistory[i].toUpperCase();
         history.appendChild(search);
-        
+
         //execute getCityName function when search history button pressed
-        search.addEventListener("click", function(event) {
+        search.addEventListener("click", function() {
             console.log("You are trying to load " + searchHistory[i]);
             getApi(searchHistory[i]);
         });
 }
+    } else {
+        clearHistoryButton.style.display = "none";
+        history.innerHTML = "";
+    }
+
+    history.appendChild(clearHistoryButton);
 }
+
+//______________CHANGE SITE COLOURS OVER TIME PERIODS_________________
 
   //change colour for time of day (e.g sunrise/sunset orange, midday blue, night dark grey);
   function backgroundChange() {
 
-    var currentHour = moment().format("HH");
-    var body = document.querySelector(".jumbotron");
+    //var currentHour = moment().format("HH");
+    var currentHour = moment().hour();
+
+    console.log("Current hour is " + currentHour);
+
+    var header = document.querySelector(".jumbotron");
+    var cards = document.querySelector("div");
+    var message = document.createElement('h3');
     
-    if ((currentHour >=5 && currentHour < 7) || (currentHour >=17 && currentHour < 18)) {
-        body.classList.add("sunriseTheme");
+    if (currentHour >=5 && currentHour < 7) {
+        header.classList.add("sunriseTheme");
+        cards.classList.add("sunriseTheme");
+        message.textContent = "Good Morning";
+
+    } else if (currentHour >=7 && currentHour < 12) {
+        header.classList.add("midTheme");
+        cards.classList.add("midTheme");
+        message.textContent = "Good Morning";
 
     } else if (currentHour >=12 && currentHour < 13) {
-        body.classList.add("middayTheme");
-    
-    } else if ((currentHour >=7 && currentHour < 12) || (currentHour >=13 && currentHour < 18)) {
-        body.classList.add("midTheme");
-    
-    } else if (currentHour >=18 && currentHour < 5) {
-        body.classList.add("nightTheme");
+        header.classList.add("middayTheme");
+        cards.classList.add("middayTheme");
+        message.textContent = "Good Afternoon";
+
+    } else if (currentHour >= 13 && currentHour < 18 ) {
+        header.classList.add("sunriseTheme");
+        cards.classList.add("sunriseTheme");
+        message.textContent = "Good Afternoon";
+
+    } else {
+        header.classList.add("nightTheme");
+        cards.classList.add("nightTheme");
+        message.textContent = "Good Evening";
     } 
+    header.appendChild(message);
 }
 
   checkWeatherButton.addEventListener("click", getCityName);
